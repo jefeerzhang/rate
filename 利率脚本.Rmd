@@ -1,0 +1,97 @@
+---
+title: "利率课程的脚本"
+author: "张剑"
+date: "3/11/2020"
+output: html_document
+---
+<style>
+  p{
+    font-size:18px;
+    line-height:1.5em;
+    text-indent:35px;
+  }
+  	#header {
+	    text-align: center;
+	}
+</style>
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+### 介绍如果安装和调用包
+### 介绍如何计算NPV和IRR
+### 简单展示画图——非完美版
+#### 1. R或python之所以强大是应为包多，包多干的事就多。安装和调用包非常简单，在Rstudio里直接使用右边的Packages对包进行管理，用鼠标就能完成。
+#### 使用代码安装install.packages('包的名字')，不过我还是建议在Rstudio里直接点击安装。
+#### 我们先安装一个现代R里最重要的一个套包，安装前请同学们调整好自己tools菜单，option选项里安装镜像站点的位置。
+#### 调用包也非常简单，直接使用library()加包的名字，每次运行脚本时都需要把重要的包调用，首当其冲的肯定是tidyverse包
+```{r}
+#install.packages("tidyverse")
+library(tidyverse)
+```
+### 接下来我们可以安装一个和我们接下来课程相关的金融包,代码前我加了一个“#”代表这条被注释了，大家可以用快捷键ctrl+shift+c进行注释或取消注释
+```{r}
+#install.packages("jrvFinance") 
+library(jrvFinance)
+```
+
+### 接下来先给大家展示一下jrvFinance包的简单用法,计算一系列现金流的PV，计算一个5年的现金流，贴现率为0.05，现金流分别为100,200,400，300,200
+
+```{r}
+library(jrvFinance) #先调入包
+# 我们现在只做最基本的演示，其他包可以不用调入
+pv <- npv(cf = c(100,200,400,300,200),rate =0.05,immediate.start=T ) ## 注意最后这个参数，上课是讲一下
+paste('我们要计算的现值是:',pv)
+```
+### 如果要计算IRR，也可以使用jrvFinance这个包，同样假设一系列现金流，0期支付200，后续每年回报80，持续4年，问这一组现金流的IRR是多少？
+
+```{r}
+library(jrvFinance) #如果你前面一个框框里调入了jrvFinance，也没有必要再次调入了
+irr <- irr(cf=c(-200,80,80,80,80))
+paste("我们要计算的IRR是：",irr)
+#嗯，确实非常简单
+```
+
+### 如果不用包，如何计算npv？
+#### 下面直接写一下，按照公式很简单的也能得到，我们将使用tribble函数建立一个DataFrame（数据框）后面有机会和大家详细讲一下数据框和所谓的tidy data。这里的语法大家可能有点困惑，不过熟悉以后就会觉得非常直观。
+```{r}
+library(tidyverse)
+
+# 我们使用tribble函数
+cf <- tribble(~Year,~cash_flow,
+              1,100,
+              2,300,
+              3,200,
+              4,1000)
+cf
+# 给定贴现率r=0.03
+r <- 0.03
+npv <- cf %>%
+  mutate(pv = cash_flow/(1+r)^Year) %>%
+  select(pv) %>% sum()
+paste("我们要求的npv是:",npv)
+```
+### 接下来把几个利率的图的代码和源文件也给大家，我这个也并非很好的画图展示方法，抛砖引玉大家可以研究。
+
+```{r}
+require(readr,tidyverse,anytime,ggthemes)
+library(tidyverse)
+setwd("~/我的坚果云/2020年MOOC")
+readr::guess_encoding("data.csv")
+data <- read_csv("data.csv",locale = locale(encoding = "GB18030"))
+data <-data[-1,]
+str(data)
+data <- data %>%
+  rename(time = `指标名称`) %>%
+  mutate(time = anytime::anytime(time),LPR1 = as.numeric(`贷款市场报价利率(LPR):1年`),
+         LPR1 = as.numeric(`贷款市场报价利率(LPR):1年`),shibor_on = as.numeric(`SHIBOR:隔夜`),shibor_week = as.numeric(`SHIBOR:1周`),Ndebt=as.numeric(`国债到期收益率:10年`),AAdebt=as.numeric(`企业债到期收益率(AA):10年`),AAAdebt = as.numeric(`企业债到期收益率(AAA):10年`),) %>%
+  filter(!is.na(time) ) %>%
+  select(time,shibor_on ,shibor_week,Ndebt,AAdebt,AAAdebt,LPR1) %>%
+  gather(key='type',value = 'value',-time)
+  
+
+ggplot(data)+
+  geom_line(mapping = aes(x=time, y = value,color=type))+
+  theme_bw()
+```
+
