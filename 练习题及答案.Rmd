@@ -1,0 +1,94 @@
+---
+title: "另一道练习题"
+author: "张剑"
+date: "3/15/2020"
+output: 
+  html_document: 
+    theme: paper
+---
+---
+<style>
+  p{
+    font-size:18px;
+    line-height:1.5em;
+    text-indent:35px;
+  }
+  	#header {
+	    text-align: center;
+	}
+</style>
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+	echo = TRUE,
+	message = FALSE,
+	warning = FALSE
+)
+```
+### 题目背景
+#### 你面临如下投资决策，现在支出70000万，投资期限为5年，每年的回报率为1万，现在的利率为5%，5年后投资结束，回收45000元，请问你是否应该参与这项投资？
+
+```{r}
+#首先加载包
+library(tidyverse)
+library(DT)
+#建立现金流
+cf <- tribble(~year, ~cf,
+              0,-70000,
+              1,10000,
+              2,10000,
+              3,10000,
+              4,10000,
+              5,55000)
+r <- 0.05
+cf %>%
+  mutate(pv =cf/(1+r)^year)  %>% 
+  datatable(rownames = F,caption = '这项投资的现金流表',colnames = c('年份','现金流','现值'))
+
+#计算npv
+npv <- cf %>%
+  mutate(pv =cf/(1+r)^year)  %>% 
+  select(pv) %>%
+  sum()
+if (npv>0){
+  paste("该项的npv为：",npv,',可行！')
+}else {
+  paste("该项的npv为：",npv,',不可行！')
+}
+```
+
+### 真实利率计算，名义利率为4%，计算半年计息，月度计息的真实利率,我们知道有一个公式
+$$(1+sr/n)^n=1+r$$
+#### 其中sr为名义利率，n为计息周期，r为真实利率
+#### 我们演示一下如何自己写函数
+```{r}
+
+s_r <- 0.04 #名义利率
+n <- 2 # 计息周期
+e_r_2 <- (1+s_r/n)^n-1 
+
+# 那么我们可以自己写一个函数
+myfun <- function(s_r , n) {
+  e_r = (1+s_r/n)^n -1
+  return(e_r)
+}
+#计算一个每月计息的名义利率的实际利率
+myfun(0.5,12)
+```
+### 接下来我们尝试考虑一下某些借款平台的日息万三的利率其实际利率是多少
+$$(1+s_r)^{360}=1+r$$
+```{r}
+myfun_2 <- function(sr,n) {
+  return((1+sr)^n-1)
+}
+myfun_2 (0.0003,360)
+```
+
+#### 年金终值，现值，我们也可以依葫芦画瓢自己写函数，这里就不展示了
+---
+### 接下来一个分期付款的例子
+#### 车价150000
+#### 贷款100000
+#### 贷款利率6%
+#### 五年还清，请问每月还多少？
+
+

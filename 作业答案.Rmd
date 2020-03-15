@@ -1,8 +1,12 @@
 ---
-title: "保险"
+title: "保险IRR计算"
 author: "Zhang JIan"
 date: "2020/3/14"
-output: html_document
+output: 
+  html_document: 
+    df_print: default
+    theme: yeti
+    toc: yes
 ---
 ---
 <style>
@@ -20,13 +24,13 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 #### 小张打算给自己刚出生的孩子购买保险产品，该产品规定从0岁起投保人每年年初支付保险费6000元，共10次。
-#### 从支付保险费的次年起，保险公司每2年年末返还一次收益，每次3000元。在孩子60岁时再一次性支付200000元养老费。
-
+#### 从支付保险费的次年起，保险公司每2年年末返还一次收益，每次3000元。在孩子60岁时再一次性支付200000元养老费。请计算这笔保险的IRR，并给出自己的判断和理解
 
 ```{r message=FALSE, warning=FALSE}
 #调用两个包
 library(tidyverse)
 library(jrvFinance)
+library(DT)
 # 建立一个dataframe，利用tidyverse进行数据清理
 cf <- tibble(period= 0:60,exp = 0)
 cf <- cf %>%
@@ -34,12 +38,17 @@ cf <- cf %>%
   mutate(income  = if_else(period %in% seq(3,60,by = 2),3000,0))
 cf[61,"income"] <- 200000
 #35行，我是这么去给最后一期赋值的，如果同学们有更好的方法可以交流修改
-irr <- cf %>%
-  mutate(pmt=exp+income) %>%
+
+#展示一下现金流
+cf %>%
+  mutate(pmt = exp+income) %>%
+  datatable(rownames = F, caption = "该保险的现金流",colnames = c('年份','支出','收益','净收益'))
+#计算净收益的irr
+irr <- cf %>% mutate(pmt = exp+income) %>%
   select(pmt) %>% 
   pull() %>%
   irr()
 #利用jrv包进行计算，注意40行用了一个pull函数
 paste("我们要计算的IRR是：",irr)
 ```
-#### 第40行用了一个pull函数，具体区别可以看这个[链接](https://stackoverflow.com/questions/49844902/difference-between-pull-and-select-in-dplyr)
+#### 上面运用了pull函数，具体区别可以看这个[链接](https://stackoverflow.com/questions/49844902/difference-between-pull-and-select-in-dplyr)
