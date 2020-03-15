@@ -2875,8 +2875,8 @@ r &lt;- 0.05
 cf %&gt;%
   mutate(pv =cf/(1+r)^year)  %&gt;% 
   datatable(rownames = F,caption = &#39;这项投资的现金流表&#39;,colnames = c(&#39;年份&#39;,&#39;现金流&#39;,&#39;现值&#39;))</code></pre>
-<div id="htmlwidget-bfcb8ae57089e6e56782" style="width:100%;height:auto;" class="datatables html-widget"></div>
-<script type="application/json" data-for="htmlwidget-bfcb8ae57089e6e56782">{"x":{"filter":"none","caption":"<caption>这项投资的现金流表<\/caption>","data":[[0,1,2,3,4,5],[-70000,10000,10000,10000,10000,55000],[-70000,9523.80952380952,9070.2947845805,8638.37598531476,8227.02474791882,43093.9391557652]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th>年份<\/th>\n      <th>现金流<\/th>\n      <th>现值<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"columnDefs":[{"className":"dt-right","targets":[0,1,2]}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+<div id="htmlwidget-5851391b9dd53f522613" style="width:100%;height:auto;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-5851391b9dd53f522613">{"x":{"filter":"none","caption":"<caption>这项投资的现金流表<\/caption>","data":[[0,1,2,3,4,5],[-70000,10000,10000,10000,10000,55000],[-70000,9523.80952380952,9070.2947845805,8638.37598531476,8227.02474791882,43093.9391557652]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th>年份<\/th>\n      <th>现金流<\/th>\n      <th>现值<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"columnDefs":[{"className":"dt-right","targets":[0,1,2]}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
 <pre class="r"><code>#计算npv
 npv &lt;- cf %&gt;%
   mutate(pv =cf/(1+r)^year)  %&gt;% 
@@ -2892,12 +2892,46 @@ if (npv&gt;0){
 </div>
 <div id="真实利率计算名义利率为4计算半年计息月度计息的真实利率我们知道有一个公式" class="section level3">
 <h3>真实利率计算，名义利率为4%，计算半年计息，月度计息的真实利率,我们知道有一个公式</h3>
-<p><span class="math display">\[(1+sr/n)^n=1+r\]</span> 其中sr为名义利率，n为计息周期，r为真实利率</p>
+<p><span class="math display">\[(1+sr/n)^n=1+r\]</span> #### 其中sr为名义利率，n为计息周期，r为真实利率 #### 我们演示一下如何自己写函数</p>
 <pre class="r"><code>s_r &lt;- 0.04 #名义利率
 n &lt;- 2 # 计息周期
 e_r_2 &lt;- (1+s_r/n)^n-1 
-e_r_2</code></pre>
-<pre><code>## [1] 0.0404</code></pre>
+
+# 那么我们可以自己写一个函数
+myfun &lt;- function(s_r , n) {
+  e_r = (1+s_r/n)^n -1
+  return(e_r)
+}
+#计算一个每月计息的名义利率的实际利率
+myfun(0.5,12)</code></pre>
+<pre><code>## [1] 0.6320941</code></pre>
+</div>
+<div id="接下来我们尝试考虑一下某些借款平台的日息万三的利率其实际利率是多少" class="section level3">
+<h3>接下来我们尝试考虑一下某些借款平台的日息万三的利率其实际利率是多少</h3>
+<p><span class="math display">\[(1+s_r)^{360}=1+r\]</span></p>
+<pre class="r"><code>myfun_2 &lt;- function(sr,n) {
+  return((1+sr)^n-1)
+}
+myfun_2 (0.0003,360)</code></pre>
+<pre><code>## [1] 0.1140297</code></pre>
+<div id="年金终值现值我们也可以依葫芦画瓢自己写函数这里就不展示了" class="section level4">
+<h4>年金终值，现值，我们也可以依葫芦画瓢自己写函数，这里就不展示了</h4>
+</div>
+</div>
+<div id="接下来一个分期付款的例子" class="section level3">
+<h3>接下来一个分期付款的例子</h3>
+<div id="车价150000" class="section level4">
+<h4>车价150000</h4>
+</div>
+<div id="贷款100000" class="section level4">
+<h4>贷款100000</h4>
+</div>
+<div id="贷款利率6" class="section level4">
+<h4>贷款利率6%</h4>
+</div>
+<div id="五年还清请问每月还多少" class="section level4">
+<h4>五年还清，请问每月还多少？</h4>
+</div>
 </div>
 
 
