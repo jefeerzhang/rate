@@ -88,7 +88,48 @@ myfun_2 (0.0003,360)
 ### 接下来一个分期付款的例子
 #### 车价150000
 #### 贷款100000
-#### 贷款利率6%
+#### 贷款利率6%年实际利率
 #### 五年还清，请问每月还多少？
 
+```{r}
+library(FinCal)
+?pmt
+#这个函数有以下参数 r对应期的贴现率，n期数，pv现值，fv终止，返还的是每期支付。
+pmt(r=0.06/12,pv=-100000,n = 60,fv=0)
+```
+
+### 另一个简单的例子
+#### 张和李两个年轻人，两人都是20岁，张决定20到40岁存钱，李决定50-70岁存钱，假设70岁退休，利率给定6%，展示两人的累计财富。
+
+```{r}
+library(tidyverse)
+library(DT)
+library(ggthemes)
+library(ggforce)
+r <-0.06
+cf <- tibble(period= 1:50,zhang=0,li=0,zhang_t=0,li_t=0)
+cf <- cf %>%
+  mutate(zhang=if_else(period %in% seq(1,20,by=1),5000,0)) %>%
+  mutate(li = if_else(period %in% seq(30,50,by=1),5000,0))
+
+for (i in 2:50) {
+  cf[i,"zhang_t"] <- (cf[i-1,'zhang']+cf[i-1,'zhang_t'])*r + cf[i,"zhang"]+cf[i-1,'zhang_t']
+    cf[i,"li_t"] <- (cf[i-1,'li']+cf[i-1,'li_t'])*r + cf[i,"li"]+cf[i-1,'li_t']
+}
+
+cf %>%
+  datatable(rownames = F,colnames = c('年份','张每年存的钱','李每年存的钱','张的累计','李的累计'))
+
+cf <- cf %>%
+  select(period,zhang_t,li_t) %>%
+  gather(key="name",value="value",-period)
+
+myp <- ggplot(data = cf,mapping = aes(x=period,y=value,color=name))+
+  geom_line(size=2,alpha=0.6)+
+  theme_clean()+
+  xlab("年份") +
+  ylab('累计资金')+
+  ggtitle("张和李的情况")
+myp
+```
 
